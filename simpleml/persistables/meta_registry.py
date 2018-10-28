@@ -15,18 +15,14 @@ class Registry(type):
 
     def __new__(cls, name, bases, attrs):
         new_cls = type.__new__(cls, name, bases, attrs)
-        if cls.__name__ in cls.registry:
+        if cls.is_registered(new_cls.__name__):
             raise ValueError('Cannot duplicate class in registry: {}'.format(cls.__name__))
         cls.registry[new_cls.__name__] = new_cls
         return new_cls
 
     @classmethod
-    def get_from_registry(cls, class_name):
+    def get(cls, class_name):
         return cls.registry.get(class_name)
-
-    @classmethod
-    def get(mcs, class_name):
-        return mcs.get_from_registry(class_name)
 
     @classmethod
     def is_registered(cls, class_name):
