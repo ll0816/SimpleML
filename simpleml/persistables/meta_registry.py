@@ -7,40 +7,45 @@ from abc import ABCMeta
 __author__ = 'Elisha Yadgaran'
 
 
-class Registry(object):
+class Registry(type):
     '''
     Importable class to maintain reference to the global registry
     '''
-    def __init__(self):
-        self.registry = {}
+    registry = {}
 
-    def register(self, cls):
-        if cls.__name__ in self.registry:
+    def __new__(cls, name, bases, attrs):
+        new_cls = type.__new__(cls, name, bases, attrs)
+        if cls.__name__ in cls.registry:
             raise ValueError('Cannot duplicate class in registry: {}'.format(cls.__name__))
-        self.registry[cls.__name__] = cls
+        cls.registry[new_cls.__name__] = new_cls
+        return new_cls
 
-    def get_from_registry(self, class_name):
-        return self.registry.get(class_name)
+    @classmethod
+    def get_from_registry(cls, class_name):
+        return cls.registry.get(class_name)
 
-    def get(self, class_name):
-        return self.get_from_registry(class_name)
+    @classmethod
+    def get(mcs, class_name):
+        return mcs.get_from_registry(class_name)
 
+    @classmethod
+    def is_registered(cls, class_name):
+        return class_name in cls.registry.keys()
+
+    @classmethod
+    def print_all_classes(cls):
+        for class_name, c in cls.registry.items():
+            print("Class Name: {} -> Class Object: {}\n".format(class_name, c))
 
 # Importable registry
 # NEED to use consistent import pattern, otherwise will refer to different memory objects
 # from meta_register import SIMPLEML_REGISTRY as s1 != from simpleml.persistables.meta_register import SIMPLEML_REGISTRY as s2
-SIMPLEML_REGISTRY = Registry()
 
 # Need to explicitly merge metaclasses to avoid conflicts
 MetaBase = type(declarative_base())
 
 
-class MetaRegistry(MetaBase, ABCMeta):
-    def __new__(cls, clsname, bases, attrs):
-        newclass = super(MetaRegistry, cls).__new__(cls, clsname, bases, attrs)
-        SIMPLEML_REGISTRY.register(newclass)
-        return newclass
-
+class MetaRegistry(MetaBase, ABCMeta, Registry):
     '''
     TBD on implementing registry as class attribute
 

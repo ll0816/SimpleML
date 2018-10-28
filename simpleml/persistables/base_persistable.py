@@ -1,6 +1,6 @@
 from sqlalchemy import MetaData, Column, func, String, Boolean, Integer, BigInteger
 from sqlalchemy.dialects.postgresql import JSONB
-from simpleml.persistables.meta_registry import MetaRegistry, SIMPLEML_REGISTRY
+from simpleml.persistables.meta_registry import MetaRegistry, Registry
 from simpleml.persistables.guid import GUID
 from simpleml.persistables.base_sqlalchemy import BaseSQLAlchemy
 from simpleml.persistables.saving import AllSaveMixin
@@ -189,4 +189,4 @@ class BasePersistable(BaseSQLAlchemy, AllSaveMixin, CustomHasherMixin):
         '''
         Wrapper function to call global registry of all imported class names
         '''
-        return SIMPLEML_REGISTRY.get(self.registered_name)
+        return Registry.get(self.registered_name)
